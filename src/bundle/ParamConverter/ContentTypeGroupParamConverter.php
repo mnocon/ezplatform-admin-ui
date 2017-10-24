@@ -8,8 +8,8 @@ declare(strict_types=1);
 
 namespace EzSystems\EzPlatformAdminUiBundle\ParamConverter;
 
+use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\Values\ContentType\ContentTypeGroup;
-use EzSystems\EzPlatformAdminUi\Service\ContentTypeGroup\ContentTypeGroupService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,18 +20,18 @@ class ContentTypeGroupParamConverter implements ParamConverterInterface
     const PARAMETER_CONTENT_TYPE_GROUP_ID = 'contentTypeGroupId';
 
     /**
-     * @var ContentTypeGroupService
+     * @var ContentTypeService
      */
-    private $contentTypeGroupService;
+    private $contentTypeService;
 
     /**
      * ContentTypeGroupParamConverter constructor.
      *
-     * @param ContentTypeGroupService $contentTypeGroupService
+     * @param ContentTypeService $contentTypeService
      */
-    public function __construct(ContentTypeGroupService $contentTypeGroupService)
+    public function __construct(ContentTypeService $contentTypeService)
     {
-        $this->contentTypeGroupService = $contentTypeGroupService;
+        $this->contentTypeService = $contentTypeService;
     }
 
     /**
@@ -41,7 +41,7 @@ class ContentTypeGroupParamConverter implements ParamConverterInterface
     {
         $id = (int)$request->get(self::PARAMETER_CONTENT_TYPE_GROUP_ID);
 
-        $group = $this->contentTypeGroupService->getContentTypeGroup($id);
+        $group = $this->contentTypeService->loadContentTypeGroup($id);
         if (!$group) {
             throw new NotFoundHttpException("ContentTypeGroup $id not found!");
         }
