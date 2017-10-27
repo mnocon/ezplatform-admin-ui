@@ -1,4 +1,6 @@
 .ez-extra-actions {
+    $block: &;
+
     border-radius: 8px;
     border: 6px solid $ez-color-secondary;
     width: 300px;
@@ -38,9 +40,32 @@
 
     &__content {
         background: $ez-ground-base;
-        padding: 8px;
         max-height: 300px;
         overflow: auto;
+    }
+
+    &--edit {
+        #{$block}__content {
+            padding: 8px;
+        }
+    }
+
+    &__section-header {
+        line-height: 27px;
+        background: $ez-ground-base-dark;
+        color: $ez-color-base-dark;
+        padding: 4px;
+    }
+
+    &__section-content {
+        background: $ez-white;
+        color: $ez-color-base-dark;
+        padding: 4px;
+
+        select {
+            display: inline-block;
+            width: 100%;
+        }
     }
 
     &::after {
@@ -56,11 +81,9 @@
     }
 }
 
-.ez-btn-container--extra-actions {
+.ez-extra-actions-container {
     .ez-extra-actions {
         position: absolute;
-        left: 0;
-        top: 50%;
         z-index: 2;
         opacity: 1;
         transform: translate(calc(-100% - 30px), -50%) scaleX(1);
