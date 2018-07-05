@@ -1,6 +1,6 @@
 {% if title is defined %}
     <div class="ez-page-title pt-3 pb-4 px-4">
-        <h1>
+        <h1 class="ez-page-title__content-item">
         {% if iconName is defined%}
             <svg class="ez-icon ez-icon-{{ iconName }}">
                 <use xlink:href="{{ asset('bundles/ezplatformadminui/img/ez-icons.svg') }}#{{ iconName }}"></use>
@@ -9,7 +9,13 @@
         {{ title }}
         </h1>
         {% if contentTypeName is defined %}
-            <h4>{{ contentTypeName }}</h4>
+            <h4 class="ez-page-title__content-type-name">{{ contentTypeName }}</h4>
+        {% endif %}
+        {% if location is defined and location_is_bookmarked is defined %}
+            {% include '@ezdesign/parts/location_bookmark.html.twig' with {
+                location: location,
+                location_is_bookmarked: location_is_bookmarked
+            } %}
         {% endif %}
     </div>
 {% endif %}

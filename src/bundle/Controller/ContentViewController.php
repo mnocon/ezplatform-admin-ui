@@ -20,7 +20,6 @@ use EzSystems\EzPlatformAdminUi\Form\Data\Location\LocationCopyData;
 use EzSystems\EzPlatformAdminUi\Form\Data\Location\LocationCopySubtreeData;
 use EzSystems\EzPlatformAdminUi\Form\Data\Location\LocationMoveData;
 use EzSystems\EzPlatformAdminUi\Form\Data\Location\LocationTrashData;
-use EzSystems\EzPlatformAdminUi\Form\Data\Location\LocationUpdateBookmarkData;
 use EzSystems\EzPlatformAdminUi\Form\Data\User\UserDeleteData;
 use EzSystems\EzPlatformAdminUi\Form\Factory\FormFactory;
 use EzSystems\EzPlatformAdminUi\Specification\ContentIsUser;
@@ -52,7 +51,7 @@ class ContentViewController extends Controller
     private $bookmarkService;
 
     /** @var int */
-    private $defaultPaginationLimit;
+    private $defaultDraftPaginationLimit;
 
     /** @var array */
     private $siteAccessLanguages;
@@ -63,6 +62,12 @@ class ContentViewController extends Controller
     /** @var int */
     private $defaultPolicyPaginationLimit;
 
+    /** @var int */
+    private $defaultSystemUrlPaginationLimit;
+
+    /** @var int */
+    private $defaultCustomUrlPaginationLimit;
+
     /**
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
      * @param \eZ\Publish\API\Repository\LanguageService $languageService
@@ -71,10 +76,12 @@ class ContentViewController extends Controller
      * @param \EzSystems\EzPlatformAdminUi\UI\Module\Subitems\ContentViewParameterSupplier $subitemsContentViewParameterSupplier
      * @param \eZ\Publish\API\Repository\UserService $userService
      * @param \eZ\Publish\API\Repository\BookmarkService $bookmarkService
-     * @param int $defaultPaginationLimit
+     * @param int $defaultDraftPaginationLimit
      * @param array $siteAccessLanguages
      * @param int $defaultRolePaginationLimit
      * @param int $defaultPolicyPaginationLimit
+     * @param int $defaultSystemUrlPaginationLimit
+     * @param int $defaultCustomUrlPaginationLimit
      */
     public function __construct(
         ContentTypeService $contentTypeService,
@@ -84,10 +91,12 @@ class ContentViewController extends Controller
         SubitemsContentViewParameterSupplier $subitemsContentViewParameterSupplier,
         UserService $userService,
         BookmarkService $bookmarkService,
-        int $defaultPaginationLimit,
+        int $defaultDraftPaginationLimit,
         array $siteAccessLanguages,
         int $defaultRolePaginationLimit,
-        int $defaultPolicyPaginationLimit
+        int $defaultPolicyPaginationLimit,
+        int $defaultSystemUrlPaginationLimit,
+        int $defaultCustomUrlPaginationLimit
     ) {
         $this->contentTypeService = $contentTypeService;
         $this->languageService = $languageService;
@@ -96,10 +105,12 @@ class ContentViewController extends Controller
         $this->subitemsContentViewParameterSupplier = $subitemsContentViewParameterSupplier;
         $this->userService = $userService;
         $this->bookmarkService = $bookmarkService;
-        $this->defaultPaginationLimit = $defaultPaginationLimit;
+        $this->defaultDraftPaginationLimit = $defaultDraftPaginationLimit;
         $this->siteAccessLanguages = $siteAccessLanguages;
         $this->defaultRolePaginationLimit = $defaultRolePaginationLimit;
         $this->defaultPolicyPaginationLimit = $defaultPolicyPaginationLimit;
+        $this->defaultSystemUrlPaginationLimit = $defaultSystemUrlPaginationLimit;
+        $this->defaultCustomUrlPaginationLimit = $defaultCustomUrlPaginationLimit;
     }
 
     /**
@@ -107,8 +118,11 @@ class ContentViewController extends Controller
      * @param \eZ\Publish\Core\MVC\Symfony\View\ContentView $view
      *
      * @return \eZ\Publish\Core\MVC\Symfony\View\ContentView
+     *
+     * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException
+     * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException
      */
-    public function locationViewAction(Request $request, ContentView $view)
+    public function locationViewAction(Request $request, ContentView $view): ContentView
     {
         // We should not cache ContentView because we use forms with CSRF tokens in template
         // JIRA ref: https://jira.ez.no/browse/EZP-28190
@@ -128,6 +142,8 @@ class ContentViewController extends Controller
         $this->supplyRolePagination($view, $request);
         $this->supplyPolicyPagination($view, $request);
 
+        $this->supplyIsLocationBookmarked($view);
+
         return $view;
     }
 
@@ -135,8 +151,10 @@ class ContentViewController extends Controller
      * @param \eZ\Publish\Core\MVC\Symfony\View\ContentView $view
      *
      * @return \eZ\Publish\Core\MVC\Symfony\View\ContentView
+     *
+     * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException
      */
-    public function embedViewAction(ContentView $view)
+    public function embedViewAction(ContentView $view): ContentView
     {
         // We should not cache ContentView because we use forms with CSRF tokens in template
         // JIRA ref: https://jira.ez.no/browse/EZP-28190
@@ -207,13 +225,6 @@ class ContentViewController extends Controller
             new LocationCopySubtreeData($location)
         );
 
-        $bookmarkUpdateType = $this->formFactory->updateBookmarkLocation(
-            new LocationUpdateBookmarkData(
-                $location,
-                $this->bookmarkService->isBookmarked($location)
-            )
-        );
-
         $view->addParameters([
             'form_location_copy' => $locationCopyType->createView(),
             'form_location_move' => $locationMoveType->createView(),
@@ -221,7 +232,6 @@ class ContentViewController extends Controller
             'form_content_create' => $contentCreateType->createView(),
             'form_subitems_content_edit' => $subitemsContentEdit->createView(),
             'form_location_copy_subtree' => $locationCopySubtreeType->createView(),
-            'form_location_bookmark' => $bookmarkUpdateType->createView(),
         ]);
 
         if ((new ContentIsUser($this->userService))->isSatisfiedBy($content)) {
@@ -254,8 +264,9 @@ class ContentViewController extends Controller
         $view->addParameters([
             'draft_pagination_params' => [
                 'route_name' => $request->get('_route'),
+                'route_params' => $request->get('_route_params'),
                 'page' => $page['version_draft'] ?? 1,
-                'limit' => $this->defaultPaginationLimit,
+                'limit' => $this->defaultDraftPaginationLimit,
             ],
         ]);
     }
@@ -271,8 +282,9 @@ class ContentViewController extends Controller
         $view->addParameters([
             'custom_urls_pagination_params' => [
                 'route_name' => $request->get('_route'),
+                'route_params' => $request->get('_route_params'),
                 'page' => $page['custom_url'] ?? 1,
-                'limit' => $this->defaultPaginationLimit,
+                'limit' => $this->defaultCustomUrlPaginationLimit,
             ],
         ]);
     }
@@ -288,8 +300,9 @@ class ContentViewController extends Controller
         $view->addParameters([
             'system_urls_pagination_params' => [
                 'route_name' => $request->get('_route'),
+                'route_params' => $request->get('_route_params'),
                 'page' => $page['system_url'] ?? 1,
-                'limit' => $this->defaultPaginationLimit,
+                'limit' => $this->defaultSystemUrlPaginationLimit,
             ],
         ]);
     }
@@ -305,6 +318,7 @@ class ContentViewController extends Controller
         $view->addParameters([
             'roles_pagination_params' => [
                 'route_name' => $request->get('_route'),
+                'route_params' => $request->get('_route_params'),
                 'page' => $page['role'] ?? 1,
                 'limit' => $this->defaultRolePaginationLimit,
             ],
@@ -322,6 +336,7 @@ class ContentViewController extends Controller
         $view->addParameters([
             'policies_pagination_params' => [
                 'route_name' => $request->get('_route'),
+                'route_params' => $request->get('_route_params'),
                 'page' => $page['policy'] ?? 1,
                 'limit' => $this->defaultPolicyPaginationLimit,
             ],
@@ -341,5 +356,13 @@ class ContentViewController extends Controller
             : null;
 
         return new ContentCreateData(null, $location, $language);
+    }
+
+    /**
+     * @param \eZ\Publish\Core\MVC\Symfony\View\ContentView $view
+     */
+    private function supplyIsLocationBookmarked(ContentView $view): void
+    {
+        $view->addParameters(['location_is_bookmarked' => $this->bookmarkService->isBookmarked($view->getLocation())]);
     }
 }

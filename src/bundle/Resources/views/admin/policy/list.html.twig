@@ -1,6 +1,6 @@
 {% trans_default_domain 'role' %}
 
-{% form_theme form_policies_delete '@EzPlatformAdminUi/form_fields.html.twig'  %}
+{% form_theme form_policies_delete '@ezdesign/form_fields.html.twig'  %}
 
 <section class="container mt-4 px-5">
     <div class="ez-table-header">
@@ -28,7 +28,7 @@
                         <use xlink:href="{{ asset('bundles/ezplatformadminui/img/ez-icons.svg') }}#trash"></use>
                     </svg>
                 </button>
-                {% include '@EzPlatformAdminUi/admin/bulk_delete_confirmation_modal.html.twig' with {
+                {% include '@ezdesign/admin/bulk_delete_confirmation_modal.html.twig' with {
                     'id': modal_data_target,
                     'message': 'policy.modal.message'|trans|desc('Do you want to delete Policy?'),
                     'data_click': '#policies_delete_delete',
@@ -97,14 +97,14 @@
     {{ form_end(form_policies_delete) }}
 
     {% if pager.haveToPaginate %}
-        <div class="row justify-content-center align-items-center mb-2">
-                <span>
+        <div class="row justify-content-center align-items-center mb-2 ez-pagination__spacing">
+                <span class="ez-pagination__text">
                     {{ 'pagination.viewing'|trans({
                         '%viewing%': pager.currentPageResults|length,
                         '%total%': pager.nbResults}, 'pagination')|desc('Viewing <strong>%viewing%</strong> out of <strong>%total%</strong> items')|raw }}
                 </span>
         </div>
-        <div class="row justify-content-center align-items-center">
+        <div class="row justify-content-center align-items-center ez-pagination__btn mb-5">
             {{ pagerfanta(pager, 'ez',{
                 'routeName': route_name,
                 'routeParams': {'_fragment': 'policies', 'roleId': role.id},

@@ -1,6 +1,6 @@
 {% trans_default_domain 'section' %}
 
-{% form_theme form_section_content_assign '@EzPlatformAdminUi/form_fields.html.twig' '@EzPlatformAdminUi/parts/form/assign_section_widget.html.twig'  %}
+{% form_theme form_section_content_assign '@ezdesign/form_fields.html.twig' '@ezdesign/parts/form/assign_section_widget.html.twig'  %}
 
 <section class="container mt-4 px-5">
     <div class="ez-table-header">
@@ -63,7 +63,7 @@
         </tbody>
     </table>
 
-    <div class="row justify-content-center align-items-center">
+    <div class="row justify-content-center align-items-center ez-pagination__spacing mb-5">
         {% if pagerfanta.haveToPaginate %}
             {{ pagination|raw }}
         {% endif %}

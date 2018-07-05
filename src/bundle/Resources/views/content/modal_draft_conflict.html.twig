@@ -25,9 +25,9 @@
                         {{ 'draft.conflict.choice'|trans({})|desc('You can either edit any of your existing draft(s) or add a new one.') }}
                     </p>
                 </div>
-                {% include '@EzPlatformAdminUi/parts/table_header.html.twig' with { headerText: null, tools: version_modal_draft_conflict.table_header_tools() } %}
+                {% include '@ezdesign/parts/table_header.html.twig' with { headerText: null, tools: version_modal_draft_conflict.table_header_tools() } %}
                 <div class="ez-scrollable-wrapper">
-                    {{ include('@EzPlatformAdminUi/content/tab/versions/table.html.twig', {
+                    {{ include('@ezdesign/content/tab/versions/table.html.twig', {
                         'versions': conflicted_drafts,
                         'location': location,
                         'is_draft': true,
@@ -44,8 +44,7 @@
     <button type="button" class="btn btn-primary ez-btn--add-draft"
             title="{{ 'tab.versions.action.delete'|trans|desc('Add draft') }}">
         <svg class="ez-icon ez-icon-create">
-            <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                 xlink:href="{{ asset('bundles/ezplatformadminui/img/ez-icons.svg') }}#create"></use>
+            <use xlink:href="{{ asset('bundles/ezplatformadminui/img/ez-icons.svg') }}#create"></use>
         </svg>
     </button>
 {% endmacro %}

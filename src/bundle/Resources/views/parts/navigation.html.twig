@@ -1,16 +1,21 @@
+{% set main_menu_context = {
+    'location': location ?? null,
+    'content': content ?? null
+} %}
+{% set main_menu = knp_menu_get('ezplatform_admin_ui.menu.main', [], main_menu_context) %}
+
 <nav class="navbar navbar-expand-sm navbar-light ez-main-nav" style="flex-wrap:wrap;">
     <div class="container-fluid">
         <a href="{{ url('ezplatform.dashboard') }}" class="navbar-brand">
-            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" xml:space="preserve" width="70" viewBox="0 0 822.59995 309.89998">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" xml:space="preserve" width="70" viewBox="0 0 822.59995 309.89998">
                 <use xlink:href="{{ asset('bundles/ezplatformadminui/img/ez-logo.svg') }}#logo"></use>
             </svg>
         </a>
         <div class="collapse navbar-collapse">
             <ul class="nav nav-tabs" role="tablist">
-                {% set main_menu = knp_menu_get('ezplatform_admin_ui.menu.main', [], {'location': location is defined ? location : null, 'content': content is defined ? content : null}) %}
                 {{ knp_menu_render(main_menu, {
                     'depth': 1,
-                    'template': '@EzPlatformAdminUi/parts/menu/top_menu.html.twig',
+                    'template': '@ezdesign/parts/menu/top_menu.html.twig',
                     'currentClass': 'active',
                     'ancestorClass': 'active'
                 }) }}
@@ -30,16 +35,16 @@
                 </div>
                 {{ knp_menu_render('ezplatform_admin_ui.menu.user', {
                     'depth': 1,
-                    'template': '@EzPlatformAdminUi/parts/menu/user_menu.html.twig'
+                    'template': '@ezdesign/parts/menu/user_menu.html.twig'
                 }) }}
             </div>
         </div>
     </div>
 </nav>
 <nav class="navbar navbar-expand-sm navbar-light ez-main-sub-nav" style="flex-wrap:wrap;">
-    {{ knp_menu_render('ezplatform_admin_ui.menu.main', {
+    {{ knp_menu_render(main_menu, {
         'depth': 2,
-        'template': '@EzPlatformAdminUi/parts/menu/top_menu_2nd_level.html.twig',
+        'template': '@ezdesign/parts/menu/top_menu_2nd_level.html.twig',
         'currentClass': 'active',
         'ancestorClass': 'active'
     }) }}

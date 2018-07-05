@@ -7,6 +7,7 @@
 namespace EzSystems\EzPlatformAdminUi\Behat\BusinessContext;
 
 use Behat\Gherkin\Node\TableNode;
+use EzSystems\EzPlatformAdminUi\Behat\Helper\EzEnvironmentConstants;
 use EzSystems\EzPlatformAdminUi\Behat\PageElement\Breadcrumb;
 use EzSystems\EzPlatformAdminUi\Behat\PageElement\Dialog;
 use EzSystems\EzPlatformAdminUi\Behat\PageElement\DraftConflictDialog;
@@ -86,6 +87,14 @@ class ContentViewContext extends BusinessContext
     }
 
     /**
+     * @Then there's no :itemName :itemType on Sub-items list of root
+     */
+    public function verifyThereIsNoItemInSubItemListInRoot(string $itemName, string $itemType): void
+    {
+        $this->verifyThereIsNoItemInSubItemList($itemName, $itemType, EzEnvironmentConstants::get('ROOT_CONTENT_NAME'));
+    }
+
+    /**
      * @Given I should be on content item page :contentName of type :contentType
      * @Given I should be on content item page :contentName of type :contentType in :path
      */
@@ -102,6 +111,14 @@ class ContentViewContext extends BusinessContext
     }
 
     /**
+     * @Given I should be on content item page :contentName of type :contentType in root path
+     */
+    public function verifyImOnContentItemPageInRoot(string $contentName, string $contentType)
+    {
+        $this->verifyImOnContentItemPage($contentName, $contentType, EzEnvironmentConstants::get('ROOT_CONTENT_NAME'));
+    }
+
+    /**
      * @Given I should be on content container page :contentName of type :contentType
      * @Given I should be on content container page :contentName of type :contentType in :path
      */
@@ -113,6 +130,25 @@ class ContentViewContext extends BusinessContext
     }
 
     /**
+     * @Given I should be on content container page :contentName of type :contentType in root path
+     */
+    public function verifyImOnContentContainerPageInRoot(string $contentName, string $contentType)
+    {
+        $this->verifyImOnContentContainerPage($contentName, $contentType, EzEnvironmentConstants::get('ROOT_CONTENT_NAME'));
+    }
+
+    /**
+     * @Given I should be on root container page in Content View
+     */
+    public function verifyImOnRootPage()
+    {
+        $contentName = EzEnvironmentConstants::get('ROOT_CONTENT_NAME');
+        $contentType = EzEnvironmentConstants::get('ROOT_CONTENT_TYPE');
+
+        $this->verifyImOnContentContainerPage($contentName, $contentType);
+    }
+
+    /**
      * @Then content attributes equal
      */
     public function contentAttributesEqual(TableNode $parameters): void
@@ -120,7 +156,7 @@ class ContentViewContext extends BusinessContext
         $hash = $parameters->getHash();
         $contentItemPage = PageObjectFactory::createPage($this->utilityContext, ContentItemPage::PAGE_NAME, '');
         foreach ($hash as $field) {
-            $contentItemPage->contentField->verifyFieldHasValue($field['label'], $field['value']);
+            $contentItemPage->contentField->verifyFieldHasValue($field['label'], $field);
         }
     }
 

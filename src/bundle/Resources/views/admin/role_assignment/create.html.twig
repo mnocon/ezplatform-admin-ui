@@ -1,11 +1,11 @@
-{% extends '@EzPlatformAdminUi/admin/role_assignment/base.html.twig' %}
+{% extends '@ezdesign/admin/role_assignment/base.html.twig' %}
 
-{% form_theme form '@EzPlatformAdminUi/form_fields.html.twig'  %}
+{% form_theme form '@ezdesign/form_fields.html.twig'  %}
 
 {% trans_default_domain 'role' %}
 
 {% block breadcrumbs_admin %}
-    {% include '@EzPlatformAdminUi/parts/breadcrumbs.html.twig' with { items: [
+    {% include '@ezdesign/parts/breadcrumbs.html.twig' with { items: [
         { value: 'breadcrumb.admin'|trans(domain='messages')|desc('Admin') },
         { url: path('ezplatform.role.list'), value: 'role.breadcrumb.list'|trans|desc('Roles') },
         { url: path('ezplatform.role.view', {roleId: role.id}), value: 'role.breadcrumb.view.identifier'|trans({ '%identifier%': role.identifier })|desc('Role "%identifier%"') },
@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block page_title_admin %}
-    {% include '@EzPlatformAdminUi/parts/page_title.html.twig' with {
+    {% include '@ezdesign/parts/page_title.html.twig' with {
         title: 'role_assignment.view.add.title'|trans|desc('Assigning users and groups'),
         iconName: 'roles'
     } %}
@@ -57,8 +57,7 @@
                         <div class="ez-limitations__item-subtree">
                             <button id="role_assignment_create_locations_select_content" data-udw-config="{{ ez_udw_config('multiple', {}) }}" class="btn btn-secondary ez-btn--select-subtree"{% if not form.limitation_type.location.vars.checked %} disabled{% endif %}>
                                 <svg class="ez-icon ez-icon--select-subtree ez-icon--medium ez-icon--light">
-                                    <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                                         xlink:href="{{ asset('bundles/ezplatformadminui/img/ez-icons.svg') }}#relations"></use>
+                                    <use xlink:href="{{ asset('bundles/ezplatformadminui/img/ez-icons.svg') }}#relations"></use>
                                 </svg>
                                 {{ 'locations.select_subtree'|trans|desc('Select Subtree') }}
                             </button>
@@ -80,7 +79,7 @@
 
 {% block right_sidebar %}
     {% set role_assignment_create_sidebar_right = knp_menu_get('ezplatform_admin_ui.menu.role_assignment_create.sidebar_right', [], {'role': role}) %}
-    {{ knp_menu_render(role_assignment_create_sidebar_right, {'template': '@EzPlatformAdminUi/parts/menu/sidebar_right.html.twig'}) }}
+    {{ knp_menu_render(role_assignment_create_sidebar_right, {'template': '@ezdesign/parts/menu/sidebar_right.html.twig'}) }}
 {% endblock %}
 
 {% block javascripts %}

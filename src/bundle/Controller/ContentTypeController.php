@@ -22,9 +22,7 @@ use EzSystems\RepositoryForms\Form\Type\ContentType\ContentTypeUpdateType;
 use Pagerfanta\Adapter\ArrayAdapter;
 use Pagerfanta\Pagerfanta;
 use eZ\Publish\API\Repository\Exceptions\BadStateException;
-use eZ\Publish\API\Repository\Exceptions\InvalidArgumentException;
 use eZ\Publish\API\Repository\Exceptions\NotFoundException;
-use eZ\Publish\API\Repository\Exceptions\UnauthorizedException;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Translation\Exception\InvalidArgumentException as TranslationInvalidArgumentException;
@@ -32,6 +30,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
 use eZ\Publish\API\Repository\UserService;
+use eZ\Publish\Core\MVC\Symfony\Security\Authorization\Attribute;
 
 class ContentTypeController extends Controller
 {
@@ -131,13 +130,16 @@ class ContentTypeController extends Controller
             $deletableTypes[$type->id] = !$this->contentTypeService->isContentTypeUsed($type);
         }
 
-        return $this->render('@EzPlatformAdminUi/admin/content_type/list.html.twig', [
+        return $this->render('@ezdesign/admin/content_type/list.html.twig', [
             'content_type_group' => $group,
             'pager' => $pagerfanta,
             'deletable' => $deletableTypes,
             'form_content_types_delete' => $deleteContentTypesForm->createView(),
             'group' => $group,
             'route_name' => $routeName,
+            'can_create' => $this->isGranted(new Attribute('class', 'create')),
+            'can_update' => $this->isGranted(new Attribute('class', 'update')),
+            'can_delete' => $this->isGranted(new Attribute('class', 'delete')),
         ]);
     }
 
@@ -152,17 +154,33 @@ class ContentTypeController extends Controller
      */
     public function addAction(ContentTypeGroup $group): Response
     {
+        $this->denyAccessUnlessGranted(new Attribute('class', 'create'));
         $mainLanguageCode = reset($this->languages);
 
         $createStruct = $this->contentTypeService->newContentTypeCreateStruct('__new__' . md5((string)microtime(true)));
         $createStruct->mainLanguageCode = $mainLanguageCode;
         $createStruct->names = [$mainLanguageCode => 'New Content Type'];
 
-        $contentTypeDraft = $this->contentTypeService->createContentType($createStruct, [$group]);
+        try {
+            $contentTypeDraft = $this->contentTypeService->createContentType($createStruct, [$group]);
+        } catch (NotFoundException $e) {
+            $this->notificationHandler->error(
+                $this->translator->trans(
+                    /** @Desc("Cannot create Content Type. Could not find 'Language' with identifier '%languageCode%'") */
+                    'content_type.add.missing_language',
+                    ['%languageCode%' => $mainLanguageCode],
+                    'content_type'
+                )
+            );
+
+            return $this->redirectToRoute('ezplatform.content_type_group.view', [
+                'contentTypeGroupId' => $group->id,
+            ]);
+        }
 
         $form = $this->createUpdateForm($group, $contentTypeDraft);
 
-        return $this->render('@EzPlatformAdminUi/admin/content_type/create.html.twig', [
+        return $this->render('@ezdesign/admin/content_type/create.html.twig', [
             'content_type_group' => $group,
             'content_type' => $contentTypeDraft,
             'form' => $form->createView(),
@@ -180,6 +198,7 @@ class ContentTypeController extends Controller
      */
     public function editAction(ContentTypeGroup $group, ContentType $contentType): Response
     {
+        $this->denyAccessUnlessGranted(new Attribute('class', 'update'));
         // Kernel does not allow editing the same Content Type simultaneously by more than one user.
         // So we need to catch 'BadStateException' and inform user about another user editing the Content Type
         try {
@@ -273,7 +292,7 @@ class ContentTypeController extends Controller
             }
         }
 
-        return $this->render('@EzPlatformAdminUi/admin/content_type/edit.html.twig', [
+        return $this->render('@ezdesign/admin/content_type/edit.html.twig', [
             'content_type_group' => $group,
             'content_type' => $contentTypeDraft,
             'form' => $form->createView(),
@@ -287,12 +306,11 @@ class ContentTypeController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      *
-     * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException
-     * @throws \eZ\Publish\API\Repository\Exceptions\BadStateException
      * @throws \Symfony\Component\Translation\Exception\InvalidArgumentException
      */
     public function deleteAction(Request $request, ContentTypeGroup $group, ContentType $contentType): Response
     {
+        $this->denyAccessUnlessGranted(new Attribute('class', 'delete'));
         $form = $this->createDeleteForm($group, $contentType);
         $form->handleRequest($request);
 
@@ -328,16 +346,13 @@ class ContentTypeController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      *
-     * @throws BadStateException
      * @throws TranslationInvalidArgumentException
      * @throws InvalidOptionsException
-     * @throws UnauthorizedException
-     * @throws InvalidArgumentException
-     * @throws NotFoundException
      * @throws \InvalidArgumentException
      */
     public function bulkDeleteAction(Request $request, ContentTypeGroup $group): Response
     {
+        $this->denyAccessUnlessGranted(new Attribute('class', 'delete'));
         $form = $this->formFactory->deleteContentTypes(
             new ContentTypesDeleteData()
         );
@@ -382,10 +397,11 @@ class ContentTypeController extends Controller
             $fieldDefinitionsByGroup[$fieldDefinition->fieldGroup ?: 'content'][] = $fieldDefinition;
         }
 
-        return $this->render('@EzPlatformAdminUi/admin/content_type/view.html.twig', [
+        return $this->render('@ezdesign/admin/content_type/view.html.twig', [
             'content_type_group' => $group,
             'content_type' => $contentType,
             'field_definitions_by_group' => $fieldDefinitionsByGroup,
+            'can_update' => $this->isGranted(new Attribute('class', 'update')),
         ]);
     }
 
@@ -404,7 +420,7 @@ class ContentTypeController extends Controller
         $languageCode = reset($this->languages);
 
         foreach ($this->languages as $prioritizedLanguage) {
-            if (isset($contentType->names[$prioritizedLanguage])) {
+            if (isset($contentTypeDraft->names[$prioritizedLanguage])) {
                 $languageCode = $prioritizedLanguage;
                 break;
             }
@@ -440,7 +456,7 @@ class ContentTypeController extends Controller
     }
 
     /**
-     * @param ContentType[] $contentTypes
+     * @param \eZ\Publish\API\Repository\Values\ContentType\ContentType[] $contentTypes
      *
      * @return array
      */

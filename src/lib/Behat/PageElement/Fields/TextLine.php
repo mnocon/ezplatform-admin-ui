@@ -43,12 +43,12 @@ class TextLine extends EzFieldElement
         return [$fieldInput->getValue()];
     }
 
-    public function verifyValue(array $value): void
+    public function verifyValueInItemView(array $values): void
     {
         Assert::assertEquals(
-            $value['value'],
-            $this->getValue()[0],
-            sprintf('Field %s has wrong value', $value['label'])
+            $values['value'],
+            $this->context->findElement($this->fields['fieldContainer'])->getText(),
+            'Field has wrong value'
         );
     }
 }

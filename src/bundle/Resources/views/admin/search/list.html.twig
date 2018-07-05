@@ -1,4 +1,4 @@
-{% extends "EzPlatformAdminUiBundle::layout.html.twig" %}
+{% extends "@ezdesign/layout.html.twig" %}
 
 {% trans_default_domain 'search' %}
 
@@ -13,9 +13,9 @@
 
         <div class="col-sm-10 px-0">
             <section class="container mt-5">
-                {% include '@EzPlatformAdminUi/parts/page_title.html.twig' with { title: 'search.headline'|trans|desc('Search'), iconName: 'search' } %}
+                {% include '@ezdesign/parts/page_title.html.twig' with { title: 'search.headline'|trans|desc('Search'), iconName: 'search' } %}
 
-                {% include '@EzPlatformAdminUi/admin/search/search_form.html.twig' with { form: form } %}
+                {% include '@ezdesign/admin/search/search_form.html.twig' with { form: form } %}
 
                 <div class="ez-table-header mt-3">
                     <div class="ez-table-header__headline">{{ 'search.header'|trans({'%total%': pagerfanta.nbResults})|desc('Search results (%total%)') }}</div>
@@ -50,14 +50,14 @@
                         </thead>
                         <tbody>
                         {% for row in results %}
-                            {% include '@EzPlatformAdminUi/admin/search/search_table_row.html.twig' with { row: row } %}
+                            {% include '@ezdesign/admin/search/search_table_row.html.twig' with { row: row } %}
                         {% endfor %}
                         </tbody>
                     </table>
-                    <div class="row justify-content-center align-items-center">
-                        <h6>{{ 'search.viewing'|trans({'%viewing%': pagerfanta.currentPageResults|length, '%total%': pagerfanta.nbResults})|desc('Viewing %viewing% out of %total% sub-items') }}</h6>
+                    <div class="row justify-content-center align-items-center ez-pagination__spacing">
+                        <h6 class="ez-pagination__text">{{ 'search.viewing'|trans({'%viewing%': pagerfanta.currentPageResults|length, '%total%': pagerfanta.nbResults})|desc('Viewing %viewing% out of %total% sub-items') }}</h6>
                     </div>
-                    <div class="row justify-content-center align-items-center">
+                    <div class="row justify-content-center align-items-center ez-pagination__btn mb-5">
                         {% if pagerfanta.haveToPaginate %}
                             {{ pagination|raw }}
                         {% endif %}
