@@ -8,4 +8,4 @@ services:
 
     EzSystems\EzPlatformAdminUi\Strategy\ContentTypeThumbnailStrategy:
         tags:
-            - { name: kernel.thumbnail_strategy, priority: 100 }
+            - { name: kernel.thumbnail_strategy, priority: -100 }
