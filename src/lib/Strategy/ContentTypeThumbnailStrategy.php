@@ -11,6 +11,7 @@ namespace EzSystems\EzPlatformAdminUi\Strategy;
 use eZ\Publish\API\Repository\Values\Content\Thumbnail;
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
 use eZ\Publish\SPI\Repository\Strategy\ContentThumbnail\ThumbnailStrategy;
+use EzSystems\EzPlatformAdminUi\Exception\ContentTypeIconNotFoundException;
 use EzSystems\EzPlatformAdminUi\UI\Service\ContentTypeIconResolver;
 
 final class ContentTypeThumbnailStrategy implements ThumbnailStrategy
@@ -30,11 +31,15 @@ final class ContentTypeThumbnailStrategy implements ThumbnailStrategy
         ContentType $contentType,
         array $fields
     ): ?Thumbnail {
-        $contentTypeIcon = $this->contentTypeIconResolver->getContentTypeIcon($contentType->identifier);
+        try {
+            $contentTypeIcon = $this->contentTypeIconResolver->getContentTypeIcon($contentType->identifier);
 
-        return new Thumbnail([
-            'resource' => $contentTypeIcon,
-            'mimeType' => self::THUMBNAIL_MIME_TYPE,
-        ]);
+            return new Thumbnail([
+                'resource' => $contentTypeIcon,
+                'mimeType' => self::THUMBNAIL_MIME_TYPE,
+            ]);
+        } catch (ContentTypeIconNotFoundException $exception) {
+            return null;
+        }
     }
 }
