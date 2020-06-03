@@ -39,7 +39,7 @@ class ContentItemPage extends Page
         $this->siteAccess = 'admin';
         $this->route = '/content/location';
         $this->rightMenu = ElementFactory::createElement($context, RightMenu::ELEMENT_NAME);
-        $this->subItemList = ElementFactory::createElement($context, SubItemsList::ELEMENT_NAME);
+        $this->subItemList = ElementFactory::createElement($context, SubItemsList::ELEMENT_NAME, $this->hasGridViewInSubitems());
         $this->contentField = ElementFactory::createElement($context, ContentField::ELEMENT_NAME);
         $this->pageTitle = $contentName;
         $this->pageTitleLocator = '.ez-page-title h1';
@@ -108,5 +108,10 @@ class ContentItemPage extends Page
                 $contentPage->subItemList->table->clickListElement($pathArray[$i]);
             }
         }
+    }
+
+    private function hasGridViewInSubitems(): bool
+    {
+        return $this->pageTitle === 'Media';
     }
 }

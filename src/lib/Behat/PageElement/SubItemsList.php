@@ -16,7 +16,7 @@ class SubItemsList extends Element
     /** @var SubItemsTable */
     public $table;
 
-    public function __construct(UtilityContext $context)
+    public function __construct(UtilityContext $context, bool $isInGridView)
     {
         parent::__construct($context);
         $this->fields = [
@@ -29,7 +29,8 @@ class SubItemsList extends Element
             'showMoreButton' => '.ez-sil .c-load-more .c-load-more__btn--load',
             'showMoreMessage' => '.ez-sil .c-load-more .c-load-more__message',
         ];
-        $this->table = ElementFactory::createElement($context, SubItemsTable::ELEMENT_NAME, $this->fields['listTable']);
+        $tableName = $isInGridView ? SubItemsGrid::ELEMENT_NAME : SubItemsTable::ELEMENT_NAME;
+        $this->table = ElementFactory::createElement($context, $tableName, $this->fields['listTable']);
     }
 
     public function verifyVisibility(): void

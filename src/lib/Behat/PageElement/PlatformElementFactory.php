@@ -107,7 +107,7 @@ class PlatformElementFactory extends ElementFactory
             case SubItemsTable::ELEMENT_NAME:
                 return new SubItemsTable($context, $parameters[0]);
             case SubItemsList::ELEMENT_NAME:
-                return new SubItemsList($context);
+                return new SubItemsList($context, $parameters[0]);
             case NavLinkTabs::ELEMENT_NAME:
                 return new NavLinkTabs($context);
             case PreviewNav::ELEMENT_NAME:
